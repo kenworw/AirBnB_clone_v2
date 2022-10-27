@@ -18,9 +18,9 @@ def do_pack():
             local("mkdir versions")
         file_name = "versions/web_static_{}.tgz".format(date)
         local("tar -cvzf {} web_static".format(file_name))
-        return file_name
+        return True
     except:
-        return None
+        return False
 
 
 def do_deploy(archive_path):
