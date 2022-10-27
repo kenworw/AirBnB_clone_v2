@@ -1,34 +1,31 @@
 #!/usr/bin/python3
-"""Module"""
-from fabric.api import put, env, run
-from datetime import datetime
-import os.path
+"""Deploys compressed files to webservers"""
+from fabric.api import *
+import os
 
+# define hosts and user
+env.hosts = [
+        "34.139.26.238",
+        "18.207.4.175",
+        ]
 env.user = 'ubuntu'
-env.hosts = ['35.190.159.176', '35.229.61.48']
 
 
 def do_deploy(archive_path):
-    """function"""
+    """Deploys.gz archive to web servers"""
     if not os.path.exists(archive_path):
         return False
-    put(archive_path, "/tmp")
-    f = archive_path.split("/")[-1]
-    name = f.split('.')[0]
-    new_dir = "{}{}".format("/data/web_static/releases/", name)
-
+    filename = os.path.basename(archive_path)
+    filename_ext = filename.split(".")[0]
+    new_dir = "/data/web_static/releases/" + filename_ext
+    put(archive_path, '/tmp/')
     run("mkdir -p {}".format(new_dir))
+    run("tar -xzf /tmp/{} -C {}".format(filename, new_dir))
 
-    run("tar xzf /tmp/{} -C {}".format(f, new_dir))
-
-    run("rm -rf /tmp/{}".format(f))
-
+    run("rm /tmp/{}".format(filename))
     run("mv {}/web_static/* {}".format(new_dir, new_dir))
-
     run("rm -rf {}/web_static".format(new_dir))
-
-    run("rm -rf {}".format("/data/web_static/current"))
-
-    run("ln -s {} {}".format(new_dir, "/data/web_static/current"))
+    run("rm -rf /data/web_static/current")
+    run("ln -s {} /data/web_static/current".format(new_dir))
 
     return True
