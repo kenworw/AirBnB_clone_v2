@@ -7,7 +7,7 @@ distributes an archive to the web servers
 from fabric.api import env, local, put, run
 from datetime import datetime
 from os.path import exists, isdir
-env.hosts = ['142.44.167.228', '144.217.246.195']
+env.hosts = ['34.75.208.81']
 
 
 def do_pack():
@@ -18,9 +18,9 @@ def do_pack():
             local("mkdir versions")
         file_name = "versions/web_static_{}.tgz".format(date)
         local("tar -cvzf {} web_static".format(file_name))
-        return True
+        return file_name
     except:
-        return False
+        return None
 
 
 def do_deploy(archive_path):

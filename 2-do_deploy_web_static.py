@@ -1,30 +1,34 @@
 #!/usr/bin/python3
-"""
-Fabric script based on the file 1-pack_web_static.py that distributes an
-archive to the web servers
-"""
+"""Module"""
+from fabric.api import put, env, run
+from datetime import datetime
+import os.path
 
-from fabric.api import put, run, env
-from os.path import exists
-env.hosts = ['142.44.167.228', '144.217.246.195']
+env.user = 'ubuntu'
+env.hosts = ['35.190.159.176', '35.229.61.48']
 
 
 def do_deploy(archive_path):
-    """distributes an archive to the web servers"""
-    if exists(archive_path) is False:
+    """function"""
+    if not os.path.exists(archive_path):
         return False
-    try:
-        file_n = archive_path.split("/")[-1]
-        no_ext = file_n.split(".")[0]
-        path = "/data/web_static/releases/"
-        put(archive_path, '/tmp/')
-        run('mkdir -p {}{}/'.format(path, no_ext))
-        run('tar -xzf /tmp/{} -C {}{}/'.format(file_n, path, no_ext))
-        run('rm /tmp/{}'.format(file_n))
-        run('mv {0}{1}/web_static/* {0}{1}/'.format(path, no_ext))
-        run('rm -rf {}{}/web_static'.format(path, no_ext))
-        run('rm -rf /data/web_static/current')
-        run('ln -s {}{}/ /data/web_static/current'.format(path, no_ext))
-        return True
-    except:
-        return False
+    put(archive_path, "/tmp")
+    f = archive_path.split("/")[-1]
+    name = f.split('.')[0]
+    new_dir = "{}{}".format("/data/web_static/releases/", name)
+
+    run("mkdir -p {}".format(new_dir))
+
+    run("tar xzf /tmp/{} -C {}".format(f, new_dir))
+
+    run("rm -rf /tmp/{}".format(f))
+
+    run("mv {}/web_static/* {}".format(new_dir, new_dir))
+
+    run("rm -rf {}/web_static".format(new_dir))
+
+    run("rm -rf {}".format("/data/web_static/current"))
+
+    run("ln -s {} {}".format(new_dir, "/data/web_static/current"))
+
+    return True
